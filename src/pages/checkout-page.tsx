@@ -4,8 +4,8 @@ import { Calendar, Check } from 'lucide-react';
 import { useAppDispatch } from '../store';
 import { removeFromCart } from '../store/slices/cartSlice';
 import { useBorrowBook } from '../hooks/useBooks';
-import { Button } from '../components/ui/Button';
-import { Footer } from '../components/layout/Footer';
+import { Button } from '../components/ui/button';
+import { Footer } from '../components/layout/footer';
 
 export const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search } from 'lucide-react';
-import { ProfileCard } from '../components/shared/ProfileCard';
-import { BorrowedListCard } from '../components/shared/BorrowedListCard';
-import { ReviewModal } from '../components/shared/ReviewModal';
-import { UserReviewsCard } from '../components/shared/UserReviewsCard';
-import { useToast } from '../contexts/ToastContext';
-import { Footer } from '../components/layout/Footer';
+import { ProfileCard } from '../components/shared/profile-card';
+import { BorrowedListCard } from '../components/shared/borrowed-list-card';
+import { ReviewModal } from '../components/shared/review-modal';
+import { UserReviewsCard } from '../components/shared/user-reviews-card';
+import { useToast } from '../contexts/toast-context';
+import { Footer } from '../components/layout/footer';
 import api from '../lib/api/client';
 
 interface UserProfile {
@@ -462,11 +462,9 @@ export const ProfilePage: React.FC = () => {
     <div className='min-h-screen bg-gray-50 flex flex-col'>
       {/* Main Content */}
       <div className='flex-1 pt-8 pb-16'>
-        {/* Main Container - Frame 1618873981 */}
+        {/* Main Container - aligned with navbar */}
         <div
-          className={`flex flex-col items-start px-4 md:p-0 gap-4 md:gap-6 ml-0 md:ml-[220px] w-full max-w-[calc(120vw-32px)] md:max-w-[1000px] mx-auto md:mx-0 ${
-            activeTab === 'borrowed' ? 'md:w-[1000px]' : 'md:w-[557px]'
-          }`}
+          className='flex flex-col items-start px-4 lg:px-[120px] gap-4 md:gap-6 w-full max-w-[1440px] mx-auto'
         >
           {/* Tab Container */}
           <div className='flex flex-row items-center p-2 gap-2 h-14 bg-[#F5F5F5] rounded-2xl w-full md:w-[557px]'>

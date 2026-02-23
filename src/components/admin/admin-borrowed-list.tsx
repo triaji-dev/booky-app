@@ -109,32 +109,32 @@ export const AdminBorrowedList: React.FC<AdminBorrowedListProps> = ({
   }
 
   return (
-    <div className='flex flex-col items-start p-0 gap-6 w-full max-w-[1200px] md:gap-6 gap-[15px] md:max-w-[1200px] max-w-[361px]'>
+    <div className='flex flex-col items-start p-0 gap-[15px] w-full max-w-[361px] md:gap-6 md:max-w-[1200px]'>
       {/* Header Section */}
-      <div className='flex flex-col items-start p-0 gap-6 w-full md:gap-6 gap-[15px]'>
+      <div className='flex flex-col items-start p-0 gap-[15px] w-full md:gap-6'>
         {/* Title */}
         <h2
-          className='w-[600px] h-[38px] font-bold text-[28px] leading-[38px] tracking-[-0.03em] text-[#0A0D12] md:w-[600px] md:h-[38px] md:text-[28px] md:leading-[38px] w-full h-[36px] text-[24px] leading-[36px]'
+          className='w-full h-[36px] font-bold text-[24px] leading-[36px] tracking-[-0.03em] text-[#0A0D12] md:w-[600px] md:h-[38px] md:text-[28px] md:leading-[38px]'
           style={{ fontFamily: 'Quicksand, sans-serif' }}
         >
           Borrowed List
         </h2>
 
         {/* Search Bar */}
-        <div className='flex flex-row items-center px-4 py-2 gap-1.5 w-[600px] h-12 bg-white border border-[#D5D7DA] rounded-full md:w-[600px] md:h-12 md:px-4 md:py-2 w-full h-[44px] px-4 py-2'>
-          <Search className='w-5 h-5 text-[#535862] md:w-5 md:h-5 w-5 h-5' />
+        <div className='flex flex-row items-center px-4 py-2 gap-1.5 w-full h-[44px] bg-white border border-[#D5D7DA] rounded-full md:w-[600px] md:h-12'>
+          <Search className='w-5 h-5 text-[#535862]' />
           <input
             type='text'
             placeholder='Search'
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className='flex-1 h-7 font-medium text-sm leading-7 tracking-[-0.03em] text-[#535862] bg-transparent border-none outline-none md:h-7 md:text-sm md:leading-7 h-7 text-sm leading-7'
+            className='flex-1 h-7 font-medium text-sm leading-7 tracking-[-0.03em] text-[#535862] bg-transparent border-none outline-none'
             style={{ fontFamily: 'Quicksand, sans-serif' }}
           />
         </div>
 
         {/* Filter Tags */}
-        <div className='flex flex-row items-center p-0 gap-3 w-[361px] h-10 md:w-[361px] md:h-10 w-full h-10'>
+        <div className='flex flex-row items-center p-0 gap-3 w-full h-10 md:w-[361px]'>
           {/* All - Active Filter */}
           <button
             onClick={() => setSelectedFilter('All')}
@@ -341,7 +341,7 @@ export const AdminBorrowedList: React.FC<AdminBorrowedListProps> = ({
                       >
                         {loan.borrowedAt ? formatDate(loan.borrowedAt) : 'N/A'}
                       </span>
-                      <div className='w-0.5 h-0.5 bg-[#0A0D12] rounded-full flex-shrink-0 md:w-0.5 md:h-0.5 w-0.5 h-0.5' />
+                      <div className='w-0.5 h-0.5 bg-[#0A0D12] rounded-full flex-shrink-0' />
                       <span
                         className='h-[28px] font-bold text-sm leading-[28px] tracking-[-0.02em] text-[#0A0D12] whitespace-nowrap md:h-[30px] md:text-base md:leading-[30px]'
                         style={{ fontFamily: 'Quicksand, sans-serif' }}

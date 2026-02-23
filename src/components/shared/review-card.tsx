@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Edit2, Trash2 } from 'lucide-react';
 import type { Review as ReviewType } from '../../lib/types';
-// import { useBookDetail } from '../../hooks/useBooks';
+
 
 // Extended user type for reviews with avatar
 interface ReviewUser {

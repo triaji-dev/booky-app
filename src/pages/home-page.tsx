@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Button } from '../components/ui/Button';
-import { Footer } from '../components/layout/Footer';
-import { BookCard } from '../components/shared/BookCard';
-import { AuthorCard } from '../components/shared/AuthorCard';
+import { Button } from '../components/ui/button';
+import { Footer } from '../components/layout/footer';
+import { BookCard } from '../components/shared/book-card';
+import { AuthorCard } from '../components/shared/author-card';
 import { useAllBooks, usePopularAuthors } from '../hooks/useBooks';
 import type { Book, Author } from '../lib/types';
 
@@ -11,6 +11,8 @@ export const HomePage: React.FC = () => {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [startX, setStartX] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
+  const [authorPage, setAuthorPage] = useState(0);
+  const authorTouchStartX = useRef(0);
   const [displayLimit, setDisplayLimit] = useState(10);
   const [searchParams, setSearchParams] = useSearchParams();
   const scrollPositionRef = useRef<number>(0);
@@ -598,32 +600,78 @@ export const HomePage: React.FC = () => {
                 Popular Authors
               </h2>
 
-              {/* Author Cards */}
-              <div className='flex flex-row items-center gap-3 md:gap-5 w-full h-auto overflow-x-auto'>
-                {authorsLoading ? (
-                  // Loading skeleton for author cards
-                  Array.from({ length: 4 }).map((_, index) => (
+              {/* Author Cards with Dot Pagination */}
+              {authorsLoading ? (
+                <div className='grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 w-full'>
+                  {Array.from({ length: 4 }).map((_, index) => (
                     <div
                       key={index}
-                      className='flex flex-row items-center p-3 md:p-4 gap-3 md:gap-4 w-[220px] md:w-[285px] h-[90px] md:h-[113px] bg-gray-200 rounded-xl flex-shrink-0 animate-pulse'
+                      className='flex flex-row items-center p-3 md:p-4 gap-3 md:gap-4 h-[84px] md:h-[113px] bg-gray-200 rounded-xl animate-pulse'
                     >
-                      <div className='w-16 h-16 md:w-20 md:h-20 bg-gray-300 rounded-full'></div>
+                      <div className='w-15 h-15 md:w-20 md:h-20 bg-gray-300 rounded-full flex-shrink-0'></div>
                       <div className='flex flex-col gap-2'>
-                        <div className='w-24 h-4 bg-gray-300 rounded'></div>
-                        <div className='w-16 h-3 bg-gray-300 rounded'></div>
+                        <div className='w-20 h-4 bg-gray-300 rounded'></div>
+                        <div className='w-14 h-3 bg-gray-300 rounded'></div>
                       </div>
                     </div>
-                  ))
-                ) : authorsError ? (
-                  <div className='flex items-center justify-center w-full h-[113px] text-gray-500'>
-                    <p>Failed to load authors</p>
+                  ))}
+                </div>
+              ) : authorsError ? (
+                <div className='flex items-center justify-center w-full h-[113px] text-gray-500'>
+                  <p>Failed to load authors</p>
+                </div>
+              ) : (() => {
+                const authorsPerPage = window.innerWidth >= 768 ? 4 : 2;
+                const totalPages = Math.ceil(popularAuthors.length / authorsPerPage);
+                return (
+                  <div className='flex flex-col items-center gap-4 w-full'>
+                    <div
+                      className='w-full overflow-hidden'
+                      onTouchStart={(e) => { authorTouchStartX.current = e.touches[0].clientX; }}
+                      onTouchEnd={(e) => {
+                        const diff = authorTouchStartX.current - e.changedTouches[0].clientX;
+                        if (Math.abs(diff) > 50) {
+                          if (diff > 0 && authorPage < totalPages - 1) setAuthorPage(p => p + 1);
+                          else if (diff < 0 && authorPage > 0) setAuthorPage(p => p - 1);
+                        }
+                      }}
+                    >
+                      <div
+                        className='flex transition-transform duration-500 ease-in-out'
+                        style={{ transform: `translateX(-${authorPage * 100}%)` }}
+                      >
+                        {Array.from({ length: totalPages }).map((_, pageIdx) => (
+                          <div
+                            key={pageIdx}
+                            className='grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 w-full flex-shrink-0'
+                          >
+                            {popularAuthors
+                              .slice(pageIdx * authorsPerPage, (pageIdx + 1) * authorsPerPage)
+                              .map((author: Author) => (
+                                <AuthorCard key={author.id} author={author} className='!w-full' />
+                              ))}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                    {totalPages > 1 && (
+                      <div className='flex items-center justify-center gap-1.5 mt-1'>
+                        {Array.from({ length: totalPages }).map((_, i) => (
+                          <button
+                            key={i}
+                            onClick={() => setAuthorPage(i)}
+                            className={`w-2.5 h-2.5 rounded-full transition-all duration-200 ${
+                              i === authorPage
+                                ? 'bg-[#1C65DA]'
+                                : 'bg-[#D5D7DA] hover:bg-gray-400'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
-                ) : (
-                  popularAuthors.map((author: Author) => (
-                    <AuthorCard key={author.id} author={author} />
-                  ))
-                )}
-              </div>
+                );
+              })()}
             </div>
           </div>
         </div>
@@ -854,32 +902,78 @@ export const HomePage: React.FC = () => {
               Popular Authors
             </h2>
 
-            {/* Author Cards - Mobile: vertical scroll, Desktop: 4 cards in row */}
-            <div className='flex flex-col md:flex-row items-center gap-4 md:gap-5 w-full h-[400px] md:h-auto overflow-y-auto md:overflow-x-visible scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100'>
-              {authorsLoading ? (
-                // Loading skeleton for author cards
-                Array.from({ length: 4 }).map((_, index) => (
+            {/* Author Cards with Dot Pagination */}
+            {authorsLoading ? (
+              <div className='grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 w-full'>
+                {Array.from({ length: 4 }).map((_, index) => (
                   <div
                     key={index}
-                    className='flex flex-row items-center p-3 md:p-4 gap-3 md:gap-4 w-[361px] md:w-[285px] h-[84px] md:h-[113px] bg-gray-200 rounded-xl flex-shrink-0 animate-pulse'
+                    className='flex flex-row items-center p-3 md:p-4 gap-3 md:gap-4 h-[84px] md:h-[113px] bg-gray-200 rounded-xl animate-pulse'
                   >
-                    <div className='w-15 h-15 md:w-20 md:h-20 bg-gray-300 rounded-full'></div>
+                    <div className='w-15 h-15 md:w-20 md:h-20 bg-gray-300 rounded-full flex-shrink-0'></div>
                     <div className='flex flex-col gap-2'>
-                      <div className='w-24 h-4 bg-gray-300 rounded'></div>
-                      <div className='w-16 h-3 bg-gray-300 rounded'></div>
+                      <div className='w-20 h-4 bg-gray-300 rounded'></div>
+                      <div className='w-14 h-3 bg-gray-300 rounded'></div>
                     </div>
                   </div>
-                ))
-              ) : authorsError ? (
-                <div className='flex items-center justify-center w-full h-[113px] text-gray-500'>
-                  <p>Failed to load authors</p>
+                ))}
+              </div>
+            ) : authorsError ? (
+              <div className='flex items-center justify-center w-full h-[113px] text-gray-500'>
+                <p>Failed to load authors</p>
+              </div>
+            ) : (() => {
+              const authorsPerPage = window.innerWidth >= 768 ? 4 : 2;
+              const totalPages = Math.ceil(popularAuthors.length / authorsPerPage);
+              return (
+                <div className='flex flex-col items-center gap-4 w-full'>
+                  <div
+                    className='w-full overflow-hidden'
+                    onTouchStart={(e) => { authorTouchStartX.current = e.touches[0].clientX; }}
+                    onTouchEnd={(e) => {
+                      const diff = authorTouchStartX.current - e.changedTouches[0].clientX;
+                      if (Math.abs(diff) > 50) {
+                        if (diff > 0 && authorPage < totalPages - 1) setAuthorPage(p => p + 1);
+                        else if (diff < 0 && authorPage > 0) setAuthorPage(p => p - 1);
+                      }
+                    }}
+                  >
+                    <div
+                      className='flex transition-transform duration-500 ease-in-out'
+                      style={{ transform: `translateX(-${authorPage * 100}%)` }}
+                    >
+                      {Array.from({ length: totalPages }).map((_, pageIdx) => (
+                        <div
+                          key={pageIdx}
+                          className='grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5 w-full flex-shrink-0'
+                        >
+                          {popularAuthors
+                            .slice(pageIdx * authorsPerPage, (pageIdx + 1) * authorsPerPage)
+                            .map((author: Author) => (
+                              <AuthorCard key={author.id} author={author} className='!w-full' />
+                            ))}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  {totalPages > 1 && (
+                    <div className='flex items-center justify-center gap-1.5 mt-1'>
+                      {Array.from({ length: totalPages }).map((_, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setAuthorPage(i)}
+                          className={`w-2.5 h-2.5 rounded-full transition-all duration-200 ${
+                            i === authorPage
+                              ? 'bg-[#1C65DA]'
+                              : 'bg-[#D5D7DA] hover:bg-gray-400'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  )}
                 </div>
-              ) : (
-                popularAuthors.map((author: Author) => (
-                  <AuthorCard key={author.id} author={author} />
-                ))
-              )}
-            </div>
+              );
+            })()}
           </div>
         </div>
       </div>

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Search, ChevronDown, X } from 'lucide-react';
 import { useAppSelector } from '../../store';
-import { Button } from '../ui/Button';
+import { Button } from '../ui/button';
 
 export const Navbar: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');

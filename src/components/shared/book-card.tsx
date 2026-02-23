@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Card, CardContent } from '../ui/Card';
+import { Card, CardContent } from '../ui/card';
 import type { Book } from '../../lib/types';
 
 interface BookCardProps {

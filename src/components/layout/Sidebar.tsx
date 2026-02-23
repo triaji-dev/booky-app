@@ -2,7 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { X, Home, BookOpen, History, User, ShoppingCart } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '../../store';
 import { setSidebarOpen } from '../../store/slices/uiSlice';
-import { Button } from '../ui/Button';
+import { Button } from '../ui/button';
 import { cn } from '../../lib/utils';
 
 interface SidebarProps {

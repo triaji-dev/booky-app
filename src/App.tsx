@@ -4,24 +4,24 @@ import {
   Route,
   Navigate,
 } from 'react-router-dom';
-import { LoginPage } from './pages/LoginPage';
-import { RegisterPage } from './pages/RegisterPage';
-import { CategoryPage } from './pages/CategoryPage';
-import { BookDetailPage } from './pages/BookDetailPage';
-import { AuthorPage } from './pages/AuthorPage';
-import { HomePage } from './pages/HomePage';
-import { ProfilePage } from './pages/ProfilePage';
-import { CartPage } from './pages/CartPage';
-import { CheckoutPage } from './pages/CheckoutPage';
-import { SuccessBorrowPage } from './pages/SuccessBorrowPage';
-import { AdminPage } from './pages/AdminPage';
-import AdminPreviewBookPage from './pages/AdminPreviewBookPage';
-import AdminAddBookPage from './pages/AdminAddBookPage';
-import AdminEditBookPage from './pages/AdminEditBookPage';
-import { ProtectedRoute } from './components/shared/ProtectedRoute';
-import { ProtectedAdminRoute } from './components/shared/ProtectedAdminRoute';
-import { Layout } from './components/layout/Layout';
-import { ToastProvider } from './contexts/ToastContext';
+import { LoginPage } from './pages/login-page';
+import { RegisterPage } from './pages/register-page';
+import { CategoryPage } from './pages/category-page';
+import { BookDetailPage } from './pages/book-detail-page';
+import { AuthorPage } from './pages/author-page';
+import { HomePage } from './pages/home-page';
+import { ProfilePage } from './pages/profile-page';
+import { CartPage } from './pages/cart-page';
+import { CheckoutPage } from './pages/checkout-page';
+import { SuccessBorrowPage } from './pages/success-borrow-page';
+import { AdminPage } from './pages/admin-page';
+import AdminPreviewBookPage from './pages/admin-preview-book-page';
+import AdminAddBookPage from './pages/admin-add-book-page';
+import AdminEditBookPage from './pages/admin-edit-book-page';
+import { ProtectedRoute } from './components/shared/protected-route';
+import { ProtectedAdminRoute } from './components/shared/protected-admin-route';
+import { Layout } from './components/layout/layout';
+import { ToastProvider } from './contexts/toast-context';
 
 function App() {
   return (

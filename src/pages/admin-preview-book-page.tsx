@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Star, Share2 } from 'lucide-react';
 import { useBookDetail } from '../hooks/useBooks';
-import { AdminHeader } from '../components/admin/AdminHeader';
+import { AdminHeader } from '../components/admin/admin-header';
 
 // Define Book interface locally to avoid import issues
 interface Book {

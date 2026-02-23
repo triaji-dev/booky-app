@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ChevronRight, Share2 } from 'lucide-react';
-import { Footer } from '../components/layout/Footer';
-import { BookCard } from '../components/shared/BookCard';
-import { ReviewCard } from '../components/shared/ReviewCard';
-import { ReviewModal } from '../components/shared/ReviewModal';
-import { Button } from '../components/ui/Button';
+import { Footer } from '../components/layout/footer';
+import { BookCard } from '../components/shared/book-card';
+import { ReviewCard } from '../components/shared/review-card';
+import { ReviewModal } from '../components/shared/review-modal';
+import { Button } from '../components/ui/button';
 import { useBookDetail, useAllBooks } from '../hooks/useBooks';
 import { useAppDispatch } from '../store';
 import { addToCart } from '../store/slices/cartSlice';
 import { useQueryClient } from '@tanstack/react-query';
-import { useToast } from '../contexts/ToastContext';
+import { useToast } from '../contexts/toast-context';
 import type { Book, BookDetail, Review } from '../lib/types';
 import api from '../lib/api/client';
 

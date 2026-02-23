@@ -2,12 +2,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { AdminUser } from '../lib/types/adminTypes';
 import { mockUsers } from '../lib/mockData/adminMockData';
-import { AdminBookList } from '../components/admin/AdminBookList';
-import { AdminUserList } from '../components/admin/AdminUserList';
-import { AdminBorrowedList } from '../components/admin/AdminBorrowedList';
-import { AdminHeader } from '../components/admin/AdminHeader';
-import { AdminDeleteBookModal } from '../components/admin/AdminDeleteBookModal';
-import { useToast } from '../contexts/ToastContext';
+import { AdminBookList } from '../components/admin/admin-book-list';
+import { AdminUserList } from '../components/admin/admin-user-list';
+import { AdminBorrowedList } from '../components/admin/admin-borrowed-list';
+import { AdminHeader } from '../components/admin/admin-header';
+import { AdminDeleteBookModal } from '../components/admin/admin-delete-book-modal';
+import { useToast } from '../contexts/toast-context';
 import { useQueryClient } from '@tanstack/react-query';
 
 // Import only the API service
@@ -53,12 +53,9 @@ export const AdminPage: React.FC = () => {
         adminApi.getLoans(),
       ]);
 
-      // Since the API doesn't provide comprehensive user data, let's use mock data
-      // In a real application, this would come from the API
       setUsers(mockUsers);
       setBorrowedBooks(loansResponse?.data ?? []);
     } catch {
-      // Set mock data for demonstration if API fails
       setUsers(mockUsers);
       setBorrowedBooks([]);
     } finally {

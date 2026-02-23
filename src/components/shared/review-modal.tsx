@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Star } from 'lucide-react';
-import { useToast } from '../../contexts/ToastContext';
+import { useToast } from '../../contexts/toast-context';
 import type { Review } from '../../lib/types';
 
 interface ReviewModalProps {

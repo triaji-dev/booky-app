@@ -13,12 +13,6 @@ export interface PaginatedResponse<T> {
   totalPages: number;
 }
 
-export interface BaseEntity {
-  id: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
 // Auth types
 export interface User {
   id: number;

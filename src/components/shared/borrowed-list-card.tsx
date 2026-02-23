@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, CardContent } from '../ui/Card';
-import { ReviewModal } from './ReviewModal';
+import { Card, CardContent } from '../ui/card';
+import { ReviewModal } from './review-modal';
 import api from '../../lib/api/client';
 
 interface Loan {

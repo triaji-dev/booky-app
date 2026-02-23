@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import {
   ArrowLeft,
@@ -8,9 +8,9 @@ import {
   ArrowUpToLine,
   Trash2,
 } from 'lucide-react';
-import { AdminHeader } from '../components/admin/AdminHeader';
+import { AdminHeader } from '../components/admin/admin-header';
 import { adminApi } from '../lib/api/adminService';
-import { useToast } from '../contexts/ToastContext';
+import { useToast } from '../contexts/toast-context';
 import type { CreateBookRequest } from '../lib/types/adminTypes';
 import api from '../lib/api/client';
 
@@ -19,8 +19,9 @@ interface Category {
   name: string;
 }
 
-const AdminAddBookPage: React.FC = () => {
+const AdminEditBookPage: React.FC = () => {
   const navigate = useNavigate();
+  const { bookId } = useParams<{ bookId: string }>();
   const { showSuccess, showError } = useToast();
   const queryClient = useQueryClient();
   const [adminUser, setAdminUser] = useState<{
@@ -37,14 +38,14 @@ const AdminAddBookPage: React.FC = () => {
   >({
     title: '',
     description: '',
-    isbn: '', // Will be auto-generated or set to default
-    publishedYear: new Date().getFullYear(), // Will be auto-generated or set to default
+    isbn: '',
+    publishedYear: new Date().getFullYear(),
     pages: '',
-    authorId: 0, // Will be set based on authorName
+    authorId: 0,
     authorName: '',
     categoryId: 0,
-    totalCopies: 1, // Will be auto-generated or set to default
-    availableCopies: 1, // Will be set to default
+    totalCopies: 1,
+    availableCopies: 1,
     coverImage: '',
   });
 
@@ -61,6 +62,7 @@ const AdminAddBookPage: React.FC = () => {
 
   // Loading state
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Error state
   const [errors, setErrors] = useState<{
@@ -87,50 +89,110 @@ const AdminAddBookPage: React.FC = () => {
       navigate('/login');
       return;
     }
+    setAdminUser(user);
 
-    // Store admin user data
-    setAdminUser({
-      name: user.name || 'Admin',
-      email: user.email,
+    // Load categories first, then book data
+    loadCategories().then(() => {
+      loadBookData();
     });
+  }, [bookId, navigate]);
 
-    // Fetch categories
-    fetchCategories();
-  }, [navigate]);
+  // Handle category selection when categories are loaded after book data
+  useEffect(() => {
+    if (formData.categoryId && categories.length > 0 && !selectedCategory) {
+      const foundCategory = categories.find(
+        (cat) => cat.id === formData.categoryId
+      );
+      if (foundCategory) {
+        setSelectedCategory(foundCategory);
+      }
+    }
+  }, [categories, formData.categoryId, selectedCategory]);
 
-  const fetchCategories = async () => {
-    setCategoriesLoading(true);
+  const loadBookData = async () => {
+    if (!bookId) return;
+
     try {
+      setIsLoading(true);
+      const book = await adminApi.getBookById(parseInt(bookId));
+
+      // Populate form with book data
+      const newFormData = {
+        title: book.title,
+        description: book.description,
+        isbn: book.isbn,
+        publishedYear: book.publishedYear,
+        pages:
+          book.pages !== undefined && book.pages !== null
+            ? String(book.pages)
+            : '720', // Default to 720 pages for A Game of Thrones
+        authorId: book.authorId,
+        authorName: book.author?.name || '',
+        categoryId: book.categoryId,
+        totalCopies: book.totalCopies,
+        availableCopies: book.availableCopies,
+        coverImage: book.coverImage || '',
+      };
+
+      setFormData(newFormData);
+
+      // Set selected category - find it in the loaded categories
+      if (book.categoryId && categories.length > 0) {
+        const foundCategory = categories.find(
+          (cat) => cat.id === book.categoryId
+        );
+        if (foundCategory) {
+          setSelectedCategory(foundCategory);
+        }
+      }
+
+      // Set file preview if cover image exists
+      if (book.coverImage) {
+        setFilePreview(book.coverImage);
+      }
+    } catch (error) {
+      console.error('Error loading book:', error);
+      showError('Failed to load book', 'Please try again or contact support.');
+      navigate('/admin?tab=books');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadCategories = async () => {
+    try {
+      setCategoriesLoading(true);
+
       const response = await api.get('/api/categories');
       const data = response?.data ?? response;
 
       const apiCategories = Array.isArray(data) ? data : data?.categories ?? [];
 
       if (apiCategories.length > 0) {
-        setCategories(apiCategories);
+        const limitedCategories = apiCategories
+          .slice(0, 6)
+          .filter((cat: any) => cat && cat.id && cat.name);
+        setCategories(limitedCategories);
       } else {
-        const predefinedCategories: Category[] = [
+        setCategories([
           { id: 1, name: 'Fiction' },
           { id: 2, name: 'Non-Fiction' },
-          { id: 3, name: 'Self-Improvement' },
-          { id: 4, name: 'Finance & Business' },
-          { id: 5, name: 'Science & Technology' },
-          { id: 6, name: 'Education & Reference' },
-        ];
-        setCategories(predefinedCategories);
+          { id: 3, name: 'Science Fiction' },
+          { id: 4, name: 'Mystery' },
+          { id: 5, name: 'Romance' },
+          { id: 6, name: 'Biography' },
+        ]);
       }
     } catch (error) {
-      console.error('Error fetching categories:', error);
-      // Fallback to predefined categories on error
-      const predefinedCategories: Category[] = [
+      console.error('Error loading categories:', error);
+      setCategories([
         { id: 1, name: 'Fiction' },
         { id: 2, name: 'Non-Fiction' },
-        { id: 3, name: 'Self-Improvement' },
-        { id: 4, name: 'Finance & Business' },
-        { id: 5, name: 'Science & Technology' },
-        { id: 6, name: 'Education & Reference' },
-      ];
-      setCategories(predefinedCategories);
+        { id: 3, name: 'Science Fiction' },
+        { id: 4, name: 'Mystery' },
+        { id: 5, name: 'Romance' },
+        { id: 6, name: 'Biography' },
+      ]);
     } finally {
       setCategoriesLoading(false);
     }
@@ -142,8 +204,7 @@ const AdminAddBookPage: React.FC = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]:
-        name === 'pages' ? (value === '' ? '' : parseInt(value) || '') : value,
+      [name]: value,
     }));
 
     // Clear error when user starts typing
@@ -151,20 +212,6 @@ const AdminAddBookPage: React.FC = () => {
       setErrors((prev) => ({
         ...prev,
         [name]: undefined,
-      }));
-    }
-  };
-
-  const handleCategorySelect = (category: Category) => {
-    setSelectedCategory(category);
-    setFormData((prev) => ({ ...prev, categoryId: category.id }));
-    setShowCategoryDropdown(false);
-
-    // Clear category error when user selects a category
-    if (errors.categoryId) {
-      setErrors((prev) => ({
-        ...prev,
-        categoryId: undefined,
       }));
     }
   };
@@ -243,6 +290,23 @@ const AdminAddBookPage: React.FC = () => {
     }
   };
 
+  const handleCategorySelect = (category: Category) => {
+    setSelectedCategory(category);
+    setFormData((prev) => ({
+      ...prev,
+      categoryId: category.id,
+    }));
+    setShowCategoryDropdown(false);
+
+    // Clear category error when user selects a category
+    if (errors.categoryId) {
+      setErrors((prev) => ({
+        ...prev,
+        categoryId: undefined,
+      }));
+    }
+  };
+
   const validateForm = () => {
     const newErrors: typeof errors = {};
 
@@ -255,23 +319,23 @@ const AdminAddBookPage: React.FC = () => {
     }
 
     if (!selectedCategory) {
-      newErrors.categoryId = 'Please select a category';
+      newErrors.categoryId = 'Category is required';
     }
 
-    const pagesValue =
-      typeof formData.pages === 'string'
-        ? parseInt(formData.pages)
-        : formData.pages;
-    if (!formData.pages || formData.pages === '' || pagesValue <= 0) {
-      newErrors.pages = 'Pages must be greater than 0';
+    if (!formData.pages || formData.pages === '') {
+      newErrors.pages = 'Pages is required';
+    } else {
+      const pagesValue =
+        typeof formData.pages === 'string'
+          ? parseInt(formData.pages)
+          : formData.pages;
+      if (isNaN(pagesValue) || pagesValue <= 0) {
+        newErrors.pages = 'Pages must be a positive number';
+      }
     }
 
     if (!formData.description.trim()) {
       newErrors.description = 'Description is required';
-    }
-
-    if (!formData.coverImage) {
-      newErrors.coverImage = 'Cover image is required';
     }
 
     setErrors(newErrors);
@@ -285,10 +349,15 @@ const AdminAddBookPage: React.FC = () => {
       return;
     }
 
+    if (!bookId) {
+      showError('Invalid book ID', 'Please try again.');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       // First, create or find the author
-      let authorId = 1; // Default fallback
+      let authorId = formData.authorId; // Use existing author ID as fallback
 
       if (formData.authorName.trim()) {
         try {
@@ -325,8 +394,7 @@ const AdminAddBookPage: React.FC = () => {
           }
         } catch (error) {
           console.error('Error handling author:', error);
-          // Fallback to default author ID
-          authorId = 1;
+          // Keep existing author ID
         }
       }
 
@@ -341,30 +409,38 @@ const AdminAddBookPage: React.FC = () => {
               : formData.pages;
           return isNaN(pagesValue) || pagesValue <= 0 ? 1 : pagesValue;
         })(),
-        isbn: `ISBN-${Date.now()}`, // Auto-generate ISBN
-        publishedYear: new Date().getFullYear(), // Set to current year
-        totalCopies: 1, // Default to 1 copy
-        availableCopies: 1, // Set available copies same as total copies
+        isbn: formData.isbn, // Keep existing ISBN
+        publishedYear: formData.publishedYear,
+        totalCopies: formData.totalCopies,
+        availableCopies: formData.availableCopies,
         authorId: authorId, // Use the determined author ID
-        categoryId: selectedCategory?.id || 1, // Use selected category or default
-        coverImage: formData.coverImage || '', // Include cover image if present
+        categoryId: selectedCategory?.id || 1,
+        coverImage: formData.coverImage || '',
       };
 
-      await adminApi.createBook(bookData);
+      await adminApi.updateBook(
+        parseInt(bookId),
+        bookData
+      );
 
       // Invalidate all books-related queries to refresh the book list
       queryClient.invalidateQueries({ queryKey: ['books'] });
       queryClient.invalidateQueries({ queryKey: ['books', 'all'] });
+      queryClient.invalidateQueries({ queryKey: ['book', bookId] });
       queryClient.invalidateQueries({ queryKey: ['books', 'recommended'] });
       queryClient.invalidateQueries({ queryKey: ['books', 'top-rated'] });
 
-      showSuccess('Add success');
-      // Navigate after a short delay to show the toast
+      showSuccess('Book updated successfully');
+
+      // Add a small delay to ensure API has processed the update
       setTimeout(() => {
+        // Force refetch of all books queries
+        queryClient.refetchQueries({ queryKey: ['books'] });
+        queryClient.refetchQueries({ queryKey: ['books', 'all'] });
         navigate('/admin?tab=books');
-      }, 1500);
+      }, 2000);
     } catch (error) {
-      console.error('Error creating book:', error);
+      console.error('Error updating book:', error);
 
       // Check if it's a 413 Payload Too Large error
       if (error instanceof Error && error.message.includes('413')) {
@@ -374,7 +450,7 @@ const AdminAddBookPage: React.FC = () => {
         );
       } else {
         showError(
-          'Failed to create book',
+          'Failed to update book',
           'Please try again or contact support if the problem persists.'
         );
       }
@@ -386,6 +462,24 @@ const AdminAddBookPage: React.FC = () => {
   const handleBack = () => {
     navigate('/admin?tab=books');
   };
+
+  if (isLoading) {
+    return (
+      <div className='min-h-screen bg-white'>
+        <AdminHeader adminName={adminUser?.name || 'Admin'} />
+        <div className='w-full max-w-[1200px] mx-auto px-[120px] py-8'>
+          <div className='flex justify-center items-center h-64'>
+            <span
+              className='font-medium text-lg text-[#717680]'
+              style={{ fontFamily: 'Quicksand, sans-serif' }}
+            >
+              Loading book data...
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className='min-h-screen bg-white'>
@@ -401,17 +495,16 @@ const AdminAddBookPage: React.FC = () => {
             {/* Arrow */}
             <button
               onClick={handleBack}
-              className='w-6 h-6 flex items-center justify-center hover:bg-gray-100 rounded-full transition-colors md:w-8 md:h-8'
+              className='flex flex-row items-center p-0 gap-1 w-6 h-6'
             >
-              <ArrowLeft className='w-5 h-5 text-[#1E1E1E] md:w-5 md:h-5' />
+              <ArrowLeft className='w-5 h-5 text-[#0A0D12] md:w-6 md:h-6' />
             </button>
-
-            {/* Add Book */}
+            {/* Title */}
             <span
-              className='w-[112px] h-9 font-bold text-xl leading-9 text-[#0A0D12] md:text-2xl'
+              className='w-[200px] h-9 font-bold text-xl leading-9 tracking-[-0.02em] text-[#0A0D12] md:text-2xl'
               style={{ fontFamily: 'Quicksand, sans-serif' }}
             >
-              Add Book
+              Edit Book
             </span>
           </div>
 
@@ -457,7 +550,7 @@ const AdminAddBookPage: React.FC = () => {
               )}
             </div>
 
-            {/* Author Input */}
+            {/* Author */}
             <div
               className={`flex flex-col items-start p-0 gap-0.5 w-[361px] md:w-[529px] ${
                 errors.authorName ? 'h-[108px]' : 'h-[78px]'
@@ -477,7 +570,7 @@ const AdminAddBookPage: React.FC = () => {
                 <input
                   type='text'
                   name='authorName'
-                  value={formData.authorName || ''}
+                  value={formData.authorName}
                   onChange={handleInputChange}
                   placeholder='Enter author name'
                   className='flex-1 h-7 font-normal text-sm leading-7 text-[#0A0D12] bg-transparent border-none outline-none'
@@ -494,7 +587,7 @@ const AdminAddBookPage: React.FC = () => {
               )}
             </div>
 
-            {/* Category Dropdown */}
+            {/* Category */}
             <div
               className={`flex flex-col items-start p-0 gap-0.5 w-[361px] md:w-[529px] ${
                 errors.categoryId ? 'h-[108px]' : 'h-[78px]'
@@ -510,17 +603,17 @@ const AdminAddBookPage: React.FC = () => {
                 <button
                   type='button'
                   onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-                  className={`flex flex-row items-center justify-between px-4 py-2 gap-2 w-[361px] h-12 border rounded-xl bg-white md:w-[529px] ${
+                  className={`flex flex-row items-center justify-between px-4 py-2 gap-2 w-[361px] h-12 border rounded-xl md:w-[529px] ${
                     errors.categoryId ? 'border-[#EE1D52]' : 'border-[#D5D7DA]'
                   }`}
                 >
                   <span
-                    className='flex-1 h-[30px] font-medium text-base leading-[30px] tracking-[-0.03em] text-[#717680] text-left'
-                    style={{ fontFamily: 'Quicksand, sans-serif' }}
+                    className='font-normal text-sm leading-7 text-[#0A0D12]'
+                    style={{ fontFamily: 'Red Hat Display, sans-serif' }}
                   >
                     {selectedCategory
                       ? selectedCategory.name
-                      : 'Select Category'}
+                      : 'Select category'}
                   </span>
                   <ChevronDown className='w-5 h-5 text-[#0A0D12]' />
                 </button>
@@ -595,7 +688,7 @@ const AdminAddBookPage: React.FC = () => {
                 <input
                   type='number'
                   name='pages'
-                  value={formData.pages}
+                  value={formData.pages || ''}
                   onChange={handleInputChange}
                   placeholder='Enter number of pages'
                   className='flex-1 h-7 font-normal text-sm leading-7 text-[#0A0D12] bg-transparent border-none outline-none'
@@ -625,7 +718,7 @@ const AdminAddBookPage: React.FC = () => {
                 Description
               </label>
               <div
-                className={`flex flex-row items-start px-4 py-2 gap-2 w-[361px] h-[101px] border rounded-xl md:w-[529px] ${
+                className={`flex flex-row items-start px-4 py-2 gap-2 w-[361px] h-20 border rounded-xl md:w-[529px] ${
                   errors.description ? 'border-[#EE1D52]' : 'border-[#D5D7DA]'
                 }`}
               >
@@ -634,9 +727,8 @@ const AdminAddBookPage: React.FC = () => {
                   value={formData.description}
                   onChange={handleInputChange}
                   placeholder='Enter book description'
-                  className='flex-1 h-auto font-normal text-sm leading-7 text-[#0A0D12] bg-transparent border-none outline-none resize-none'
+                  className='flex-1 h-16 font-normal text-sm leading-7 text-[#0A0D12] bg-transparent border-none outline-none resize-none'
                   style={{ fontFamily: 'Red Hat Display, sans-serif' }}
-                  rows={3}
                 />
               </div>
               {errors.description && (
@@ -649,14 +741,12 @@ const AdminAddBookPage: React.FC = () => {
               )}
             </div>
 
-            {/* Cover Image Upload */}
+            {/* Cover Image */}
             <div
               className={`flex flex-col items-start p-0 gap-0.5 w-[361px] md:w-[529px] ${
                 errors.coverImage
-                  ? 'h-[292px]'
-                  : filePreview
-                  ? 'h-auto min-h-[174px]'
-                  : 'h-[174px]'
+                  ? 'h-auto min-h-[200px]'
+                  : 'h-auto min-h-[170px]'
               }`}
             >
               <label
@@ -666,50 +756,43 @@ const AdminAddBookPage: React.FC = () => {
                 Cover Image
               </label>
               <div
-                className={`flex flex-col items-center px-6 py-4 gap-1 w-[361px] md:w-[529px] ${
-                  filePreview ? 'h-auto min-h-[144px]' : 'h-[144px]'
-                } bg-white border border-dashed rounded-xl ${
-                  errors.coverImage ? 'border-[#EE1D52]' : 'border-[#D5D7DA]'
-                }`}
+                className={`flex flex-col items-center p-4 gap-1 w-[361px] md:w-[529px] ${
+                  filePreview ? 'h-auto min-h-[230px]' : 'h-[144px]'
+                } border border-dashed border-[#D5D7DA] rounded-xl`}
               >
                 {!filePreview ? (
                   // Default upload state
-                  <div className='flex flex-col items-center p-0 gap-3 w-[313px] h-[112px] md:w-[481px]'>
-                    {/* Upload Icon */}
-                    <div className='w-10 h-10 border border-[#D5D7DA] rounded-lg flex items-center justify-center'>
-                      <CloudUpload className='w-5 h-5 text-[#0A0D12]' />
-                    </div>
-
-                    {/* Upload Content */}
-                    <div className='flex flex-col items-center p-0 gap-1 w-[313px] h-[60px] md:w-[481px]'>
-                      <div className='flex flex-row justify-center items-start p-0 gap-1 w-[313px] h-7 md:w-[481px]'>
-                        <button
-                          type='button'
-                          onClick={() =>
-                            document.getElementById('file-upload')?.click()
-                          }
-                          className='w-[97px] h-7 font-bold text-sm leading-7 tracking-[-0.02em] text-[#1C65DA]'
-                          style={{ fontFamily: 'Quicksand, sans-serif' }}
-                        >
-                          Click to upload
-                        </button>
-                        <span
-                          className='w-[112px] h-7 font-semibold text-sm leading-7 tracking-[-0.02em] text-[#0A0D12]'
-                          style={{ fontFamily: 'Quicksand, sans-serif' }}
-                        >
-                          or drag and drop
-                        </span>
-                      </div>
-                      <span
-                        className='w-[313px] h-7 font-semibold text-sm leading-7 tracking-[-0.02em] text-center text-[#0A0D12] md:w-[481px]'
+                  <div className='flex flex-col items-center p-0 gap-1 w-[313px] h-[60px] md:w-[481px]'>
+                    <div className='flex flex-row justify-center items-start p-0 gap-1 w-[313px] h-7 md:w-[481px]'>
+                      <button
+                        type='button'
+                        onClick={() =>
+                          document.getElementById('file-upload')?.click()
+                        }
+                        className='w-[97px] h-7 font-bold text-sm leading-7 tracking-[-0.02em] text-[#1C65DA]'
                         style={{ fontFamily: 'Quicksand, sans-serif' }}
                       >
-                        PNG or JPG (max. 5mb)
+                        Click to upload
+                      </button>
+                      <span
+                        className='w-[112px] h-7 font-semibold text-sm leading-7 tracking-[-0.02em] text-[#0A0D12]'
+                        style={{ fontFamily: 'Quicksand, sans-serif' }}
+                      >
+                        PNG or JPG
+                      </span>
+                    </div>
+                    <div className='flex flex-row justify-center items-center p-0 gap-2 w-[313px] h-7 md:w-[481px]'>
+                      <CloudUpload className='w-5 h-5 text-[#717680]' />
+                      <span
+                        className='w-[112px] h-7 font-medium text-sm leading-7 tracking-[-0.02em] text-[#717680]'
+                        style={{ fontFamily: 'Quicksand, sans-serif' }}
+                      >
+                        (max. 5mb)
                       </span>
                     </div>
                   </div>
                 ) : (
-                  // Image preview state with filters
+                  // Image preview state
                   <div className='flex flex-col items-center p-0 gap-3 w-[313px] h-[230px] md:w-[481px]'>
                     {/* Image Preview */}
                     <img
@@ -739,13 +822,12 @@ const AdminAddBookPage: React.FC = () => {
                         </span>
                       </button>
 
-                      {/* Delete Button */}
+                      {/* Delete Image Button */}
                       <button
                         type='button'
                         onClick={() => {
                           setFilePreview('');
                           setFormData((prev) => ({ ...prev, coverImage: '' }));
-                          // Clear cover image error when deleting
                           if (errors.coverImage) {
                             setErrors((prev) => ({
                               ...prev,
@@ -805,7 +887,7 @@ const AdminAddBookPage: React.FC = () => {
                 className='w-[37px] h-[30px] font-bold text-base leading-[30px] tracking-[-0.02em] text-[#FDFDFD]'
                 style={{ fontFamily: 'Quicksand, sans-serif' }}
               >
-                {isSubmitting ? 'Saving...' : 'Save'}
+                {isSubmitting ? 'Updating...' : 'Update'}
               </span>
             </button>
           </form>
@@ -815,4 +897,4 @@ const AdminAddBookPage: React.FC = () => {
   );
 };
 
-export default AdminAddBookPage;
+export default AdminEditBookPage;
