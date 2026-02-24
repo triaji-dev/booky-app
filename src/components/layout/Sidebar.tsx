@@ -35,7 +35,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       {/* Mobile overlay */}
       {isOpen && (
         <div
-          className='fixed inset-0 z-20 bg-black/50 lg:hidden'
+          className='fixed inset-0 z-20 bg-black/50 lg:hidden cursor-pointer'
           onClick={closeSidebar}
         />
       )}

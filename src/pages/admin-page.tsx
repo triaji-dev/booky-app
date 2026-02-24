@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { AdminUser } from '../lib/types/adminTypes';
-import { mockUsers } from '../lib/mockData/adminMockData';
 import { AdminBookList } from '../components/admin/admin-book-list';
 import { AdminUserList } from '../components/admin/admin-user-list';
 import { AdminBorrowedList } from '../components/admin/admin-borrowed-list';
@@ -47,16 +46,16 @@ export const AdminPage: React.FC = () => {
       setLoading(true);
 
       // Fetch all admin data in parallel
-      const [, , loansResponse] = await Promise.all([
+      const [, usersResponse, loansResponse] = await Promise.all([
         adminApi.getOverview(),
         adminApi.getUsers(),
         adminApi.getLoans(),
       ]);
 
-      setUsers(mockUsers);
+      setUsers(usersResponse.data || []);
       setBorrowedBooks(loansResponse?.data ?? []);
     } catch {
-      setUsers(mockUsers);
+      setUsers([]);
       setBorrowedBooks([]);
     } finally {
       setLoading(false);
