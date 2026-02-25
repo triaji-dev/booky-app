@@ -20,7 +20,7 @@ import AdminAddBookPage from './pages/admin-add-book-page';
 import AdminEditBookPage from './pages/admin-edit-book-page';
 import { ProtectedRoute } from './components/shared/protected-route';
 import { ProtectedAdminRoute } from './components/shared/protected-admin-route';
-import { Layout } from './components/layout/layout';
+import { Layout } from './components/layout/Layout';
 import { ToastProvider } from './contexts/toast-context';
 
 function App() {

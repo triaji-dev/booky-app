@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Footer } from '../components/layout/footer';
+import { Footer } from '../components/layout/Footer';
 import { BookCard } from '../components/shared/book-card';
 import { X, ListFilter } from 'lucide-react';
 import type { Book } from '../lib/types';

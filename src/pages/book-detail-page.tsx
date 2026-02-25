@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ChevronRight, Share2 } from 'lucide-react';
-import { Footer } from '../components/layout/footer';
+import { Footer } from '../components/layout/Footer';
 import { BookCard } from '../components/shared/book-card';
 import { ReviewCard } from '../components/shared/review-card';
 import { ReviewModal } from '../components/shared/review-modal';
-import { Button } from '../components/ui/button';
+import { Button } from '../components/ui/Button';
 import { useBookDetail, useAllBooks } from '../hooks/useBooks';
 import { useAppDispatch } from '../store';
 import { addToCart } from '../store/slices/cartSlice';

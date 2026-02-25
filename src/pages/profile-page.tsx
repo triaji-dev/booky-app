@@ -6,7 +6,7 @@ import { BorrowedListCard } from '../components/shared/borrowed-list-card';
 import { ReviewModal } from '../components/shared/review-modal';
 import { UserReviewsCard } from '../components/shared/user-reviews-card';
 import { useToast } from '../contexts/toast-context';
-import { Footer } from '../components/layout/footer';
+import { Footer } from '../components/layout/Footer';
 import api from '../lib/api/client';
 
 interface UserProfile {

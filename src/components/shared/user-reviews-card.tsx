@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Star, Edit2, Trash2 } from 'lucide-react';
-import { Card } from '../ui/card';
+import { Card } from '../ui/Card';
 import api from '../../lib/api/client';
 
 interface UserReview {

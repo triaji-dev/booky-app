@@ -1,6 +1,6 @@
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { Footer } from '../components/layout/footer';
+import { Footer } from '../components/layout/Footer';
 import { useAllBooks } from '../hooks/useBooks';
 import { BookCard } from '../components/shared/book-card';
 import type { Book } from '../lib/types';

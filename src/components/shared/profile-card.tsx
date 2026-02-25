@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { User, Camera } from 'lucide-react';
-import { Card, CardContent } from '../ui/card';
+import { Card, CardContent } from '../ui/Card';
 
 interface ProfileData {
   name?: string;

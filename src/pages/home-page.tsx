@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Button } from '../components/ui/button';
-import { Footer } from '../components/layout/footer';
+import { Button } from '../components/ui/Button';
+import { Footer } from '../components/layout/Footer';
 import { BookCard } from '../components/shared/book-card';
 import { AuthorCard } from '../components/shared/author-card';
 import { useAllBooks, usePopularAuthors } from '../hooks/useBooks';

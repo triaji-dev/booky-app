@@ -3,8 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingCart, BookOpen, Check, Trash2 } from 'lucide-react';
 import { useAppSelector, useAppDispatch } from '../store';
 import { removeFromCart } from '../store/slices/cartSlice';
-import { Button } from '../components/ui/button';
-import { Footer } from '../components/layout/footer';
+import { Button } from '../components/ui/Button';
+import { Footer } from '../components/layout/Footer';
 
 export const CartPage: React.FC = () => {
   const dispatch = useAppDispatch();
